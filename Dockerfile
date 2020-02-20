@@ -2,7 +2,30 @@ FROM openjdk:8-jdk-stretch
 
 # Install git lfs on Debian stretch per https://github.com/git-lfs/git-lfs/wiki/Installation#debian-and-ubuntu
 # Avoid JENKINS-59569 - git LFS 2.7.1 fails clone with reference repository
-RUN apt-get update && apt-get upgrade -y && apt-get install -y git curl && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    # git and curl
+    apt-get install -y git curl && \
+    # git lfs
+    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && \
+    apt-get install -y git-lfs && \
+    git lfs install && \
+    # zip
+    apt-get install -y zip && \
+    # sbt
+    echo 'deb https://dl.bintray.com/sbt/debian /' > /etc/apt/sources.list.d/sbt.list && \
+    curl -sL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823' | apt-key add && \
+    apt-get update && \
+    apt-get install -u sbt && \
+    # locales
+    apt-get install -y locales && \
+    sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && \
+    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen && \
+    # cleanup
+    rm -rf /var/cache/apt/* && \
+    rm -rf /tmp/* && \
+    rm -rf /var/lib/apt/lists/*
 
 ARG user=jenkins
 ARG group=jenkins
